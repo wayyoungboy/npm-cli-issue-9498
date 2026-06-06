@@ -701,6 +701,43 @@ t.test('workspaces', async t => {
       'bin symlink is put into place'
     )
   })
+
+  t.test('linked deps respect allowScripts deny entries', async t => {
+    const path = t.testdir({
+      'package.json': JSON.stringify({
+        name: 'my-workspaces-powered-project',
+        dependencies: {
+          a: 'file:./a',
+        },
+      }),
+      node_modules: {
+        a: t.fixture('symlink', '../a'),
+      },
+      a: {
+        'package.json': JSON.stringify({
+          name: 'a',
+          version: '1.0.0',
+          scripts: { prepare: 'exit 0' },
+        }),
+      },
+    })
+
+    const RUNS = []
+    const Arborist = t.mock('../../lib/arborist/index.js', {
+      '@npmcli/run-script': async opts => {
+        RUNS.push(opts)
+        return { code: 0, signal: null }
+      },
+    })
+    const arb = new Arborist({
+      path,
+      allowScripts: { 'file:../a': false },
+      dangerouslyAllowAllScripts: false,
+    })
+
+    await arb.rebuild()
+    t.strictSame(RUNS, [], 'prepare script is blocked by allowScripts deny')
+  })
 })
 
 t.test('put bins in the right place for linked-global top pkgs', async t => {

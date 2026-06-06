@@ -202,11 +202,10 @@ module.exports = cls => class Builder extends cls {
       // allowScripts gate (RFC npm/rfcs#868). `true` lets lifecycle
       // scripts run; `false` and `null` (unreviewed) both block.
       // --ignore-scripts in #build() still wins. Bypasses:
-      // --dangerously-allow-all-scripts, links and workspaces (the
+      // --dangerously-allow-all-scripts and workspaces (the
       // owner is responsible). Bin linking is not gated.
       const scriptsAllowed =
         this.options.dangerouslyAllowAllScripts ||
-        node.isLink ||
         node.isWorkspace ||
         isScriptAllowed(node, this.options.allowScripts) === true
       for (const [key, has] of Object.entries(tests)) {

@@ -38,10 +38,6 @@ const collectUnreviewedScripts = async ({
     if (node.isProjectRoot || node.isWorkspace) {
       continue
     }
-    if (node.isLink) {
-      // Linked workspace dependencies are managed by the workspace owner.
-      continue
-    }
     if (node.inBundle) {
       // Bundled dependencies never run their install scripts and cannot be
       // allowlisted, so they are never "pending". Skipping them keeps them

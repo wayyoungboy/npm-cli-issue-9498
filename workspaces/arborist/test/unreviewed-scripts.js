@@ -69,12 +69,11 @@ t.test('collectUnreviewedScripts', async t => {
     t.strictSame(await collectUnreviewedScripts(), [])
   })
 
-  t.test('skips project root, workspace, linked, and bundled nodes', async t => {
+  t.test('skips project root, workspace, and bundled nodes', async t => {
     const result = await collectUnreviewedScripts({
       tree: tree([
         node({ name: 'root', scripts: { install: 'x' }, isProjectRoot: true }),
         node({ name: 'ws', scripts: { install: 'x' }, isWorkspace: true }),
-        node({ name: 'linked', scripts: { install: 'x' }, isLink: true }),
         node({ name: 'bundled', scripts: { install: 'x' }, inBundle: true }),
       ]),
       policy: null,
@@ -116,6 +115,20 @@ t.test('collectUnreviewedScripts', async t => {
     })
     t.equal(result.length, 1)
     t.equal(result[0].node.name, 'pending')
+  })
+
+  t.test('collects unreviewed linked local dependencies', async t => {
+    const linked = node({ name: 'linked', scripts: { install: 'x' }, isLink: true })
+    linked.resolved = 'file:../linked'
+    linked.isRegistryDependency = false
+
+    const result = await collectUnreviewedScripts({
+      tree: tree([linked]),
+      policy: null,
+    })
+
+    t.equal(result.length, 1)
+    t.equal(result[0].node.name, 'linked')
   })
 
   t.test('skips reviewed local directory link targets', async t => {
